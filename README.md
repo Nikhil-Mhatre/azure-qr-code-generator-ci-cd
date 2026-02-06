@@ -113,8 +113,8 @@ Ensure the following tools are installed and configured:
 # 📥 Clone the Repository
 
 ```bash
-git clone git@github.com:Nikhil-Mhatre/azure-test.git
-cd azure-test
+git clone git@github.com:Nikhil-Mhatre/azure-qr-code-generator-ci-cd.git
+cd azure-qr-code-generator-ci-cd
 
 ```
 
