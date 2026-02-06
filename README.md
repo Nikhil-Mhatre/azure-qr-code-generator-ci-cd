@@ -1,0 +1,340 @@
+# Production-Grade QR Code Generator API on Azure Functions
+
+---
+
+# 📘 Introduction / Overview
+
+This project is a **production-grade reference implementation** for deploying a **Node.js TypeScript Azure Function** using **modern DevOps and security best practices**.
+
+It demonstrates how to build, secure, and deploy a serverless backend on Azure using:
+
+- **Terraform** for infrastructure as code
+- **GitHub Actions** for automated CI/CD
+- **Azure Entra ID (OIDC)** for passwordless authentication
+- **Azure Key Vault** for secure secrets management
+- **Deployment slots** for zero-downtime releases
+
+The goal of this repository is not just to deploy an Azure Function, but to showcase **how Azure Functions should be deployed in real-world, production environments**—with strong security boundaries, reproducible infrastructure, and fully automated delivery pipelines.
+
+---
+
+# ✨ Features
+
+This project provides a **production-ready reference architecture** for deploying **Node.js TypeScript Azure Functions** with secure, automated CI/CD on Azure.
+
+---
+
+### 🔐 Secure, Passwordless Authentication
+
+- GitHub Actions authenticates to Azure using **OIDC (Federated Identity)**
+- No client secrets or credentials stored in GitHub
+- Aligns with modern cloud security best practices
+
+---
+
+### 🏗️ Infrastructure as Code (Terraform)
+
+- Fully automated Azure infrastructure provisioning
+- Repeatable, version-controlled, and environment-aware
+- Creates Function App, Key Vault, Storage, slots, and identities
+
+---
+
+### 🔑 Centralized Secrets Management
+
+- All secrets stored in **Azure Key Vault**
+- Secure access via managed identities and RBAC
+- No secrets hardcoded in code or pipelines
+
+---
+
+### 🚀 Automated CI/CD with GitHub Actions
+
+- Triggered on every push to `main`
+- Build, package, and deploy TypeScript functions automatically
+- Azure login handled securely via OIDC
+
+---
+
+### 🔄 Zero-Downtime Deployments
+
+- Uses **staging → production slot swapping**
+- Health checks before promoting releases
+- Prevents broken deployments from reaching users
+
+---
+
+### 📦 Modern Serverless Stack
+
+- Azure Functions v4
+- Node.js 22 + TypeScript
+- Optimized for scalability and maintainability
+
+---
+
+### 🛡️ Enterprise-Ready by Design
+
+- Least-privilege RBAC
+- Separate identities for Terraform and CI/CD
+- Clean, scalable, and extensible architecture
+
+---
+
+This repository is ideal as a **real-world baseline** for building secure, scalable, and automated Azure Function deployments.
+
+# 🏗️ Architecture Overview
+
+This project uses a secure, production-grade architecture for deploying
+Node.js TypeScript Azure Functions with automated CI/CD.
+
+![Architecture Diagram](https://www.notion.sodocs/architecture-diagram.png)
+
+### High-level design
+
+- Infrastructure is provisioned using Terraform
+- GitHub Actions deploys code using OIDC (no secrets)
+- Secrets are stored in Azure Key Vault
+- Deployments use staging slots for zero downtime
+
+📘 **Detailed architecture documentation:**
+
+➡️ [docs/architecture.md](https://www.notion.so/docs/architecture.md)
+
+# 📦 Prerequisites
+
+Ensure the following tools are installed and configured:
+
+- Azure CLI (`az`)
+- Terraform (v1.x recommended)
+- Git
+- An active Azure subscription
+- GitHub account with repository access
+
+---
+
+# 📥 Clone the Repository
+
+```bash
+git clone git@github.com:Nikhil-Mhatre/azure-test.git
+cd azure-test
+
+```
+
+---
+
+# 🔐 Azure Authentication for Terraform
+
+Terraform uses an **Azure Service Principal** to authenticate and manage Azure resources securely.
+
+### 1️⃣ Login to Azure
+
+```bash
+az login
+
+```
+
+If you have multiple subscriptions:
+
+```bash
+az account set --subscription "<SUBSCRIPTION_ID>"
+
+```
+
+---
+
+### 2️⃣ Create a Service Principal
+
+Run the following command and **store the output securely**:
+
+```bash
+az ad sp create-for-rbac \
+  --name "terraform-sp" \
+  --role="Contributor" \
+  --scopes="/subscriptions/<SUBSCRIPTION_ID>"
+
+```
+
+Example output:
+
+```json
+{
+  "appId": "00000000-0000-0000-0000-000000000000",
+  "displayName": "terraform-sp",
+  "password": "xxxxxxxxxxxxxxxx",
+  "tenant": "11111111-1111-1111-1111-111111111111"
+}
+
+```
+
+---
+
+### 3️⃣ Map Azure Output to Terraform Variables
+
+| Terraform Variable | Azure CLI Output |
+| --- | --- |
+| `client_id` | `appId` |
+| `client_secret` | `password` |
+| `tenant_id` | `tenant` |
+| `subscription_id` | Azure Subscription ID |
+
+---
+
+# ⚙️ Configure Environment Variables
+
+Create a `.env` file (refer to `.env.sample`) and ensure **all Azure secrets are prefixed with `ARM_`**.
+
+```bash
+ARM_CLIENT_ID="<appId>"
+ARM_CLIENT_SECRET="<password>"
+ARM_TENANT_ID="<tenant>"
+ARM_SUBSCRIPTION_ID="<subscription_id>"
+
+```
+
+### GitHub Token (Required)
+
+Generate a **Classic Personal Access Token**:
+
+> GitHub → Settings → Developer Settings → Personal Access Tokens → Tokens (Classic)
+> 
+
+Add it to `.env` using the Terraform variable prefix:
+
+```bash
+TF_VAR_github_token=xxxxxxxxxxxxxxxx
+
+```
+
+> ℹ️ Terraform automatically loads variables prefixed with TF_VAR_.
+> 
+
+---
+
+## 🧪 Load and Verify Environment Variables
+
+```bash
+set -a
+source .env
+set +a
+
+```
+
+Verify:
+
+```bash
+echo $ARM_CLIENT_ID
+
+```
+
+---
+
+# 🏗️ Provision Infrastructure with Terraform
+
+### 1️⃣ Navigate to Infrastructure Directory
+
+```bash
+cd infra
+
+```
+
+### 2️⃣ Create `terraform.tfvars`
+
+Use `terraform.sample.tfvars` as reference:
+
+```hcl
+project_name = "qrcode"
+environment  = "prod"
+location     = "centralindia"
+github_owner = "YOUR_GITHUB_USERNAME"
+github_repo  = "YOUR_REPO_NAME"
+
+```
+
+---
+
+### 3️⃣ Run Terraform
+
+```bash
+terraform init
+terraform plan
+terraform apply -auto-approve
+
+```
+
+---
+
+# 🚀 Deploy Backend via GitHub Actions
+
+Once infrastructure is ready:
+
+```bash
+cd ../.backend
+
+```
+
+- Modify backend code as needed
+- Push changes to the `main` branch
+
+This will automatically trigger the **GitHub Actions workflow** and deploy the backend to **Azure Functions**.
+
+---
+
+# 🤝 Contributing
+
+Contributions are welcome and appreciated! Please follow the steps below to get started quickly.
+
+---
+
+### 🛠️ How to Contribute
+
+1. **Fork the repository**
+2. **Clone your fork**
+    
+    ```bash
+    git clone git@github.com:<your-username>/<repo-name>.git
+    cd <repo-name>
+    
+    ```
+    
+3. **Create a feature branch**
+    
+    ```bash
+    git checkout -b feature/your-change
+    
+    ```
+    
+4. **Make your changes**
+    - Follow existing code and Terraform conventions
+    - Keep changes focused and minimal
+5. **Commit your work**
+    
+    ```bash
+    git commit -m "feat: meaningful description"
+    
+    ```
+    
+6. **Push to your fork**
+    
+    ```bash
+    git push origin feature/your-change
+    
+    ```
+    
+7. **Open a Pull Request** against the `main` branch
+
+---
+
+### ✅ Contribution Guidelines
+
+- Ensure CI checks pass
+- Avoid committing secrets or environment files
+- Update documentation if behavior changes
+- One logical change per PR is preferred
+
+---
+
+Thanks for helping improve this project 🚀
+
+# 📜 License
+
+This project is licensed under the MIT License.

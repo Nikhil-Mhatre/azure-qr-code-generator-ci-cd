@@ -1,0 +1,5 @@
+project_name="qrcode"
+environment="prod"
+location="centralindia"
+github_owner="XXXXXXXXXXXXXXX"
+github_repo="XXXXXXXXXXXXXXX"
