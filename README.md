@@ -155,7 +155,7 @@ After creation, note down:
 4. Click **Add**
 5. **Copy the secret value immediately it will client secret** (it will not be shown again)
 
-![Architecture Diagram](https://github.com/Nikhil-Mhatre/azure-qr-code-generator-ci-cd/blob/main/docs/Terraform_SP_creation.png)
+![Terraform_SP_creation](https://github.com/Nikhil-Mhatre/azure-qr-code-generator-ci-cd/blob/main/docs/Terraform_SP_creation.png)
 
 ---
 
@@ -179,7 +179,7 @@ After creation, note down:
 ## Note: Create same steps for creating "User Access Administrator" role
 ✅ The Service Principal now has permission to manage Azure resources.
 
-![Architecture Diagram](https://github.com/Nikhil-Mhatre/azure-qr-code-generator-ci-cd/blob/main/docs/contributor_and_user_access_role_assignment.png)
+![contributor_and_user_access_role_assignment](https://github.com/Nikhil-Mhatre/azure-qr-code-generator-ci-cd/blob/main/docs/contributor_and_user_access_role_assignment.png)
 
 ---
 
@@ -201,7 +201,7 @@ Generate a **Classic Personal Access Token**:
 
 > GitHub → Settings → Developer Settings → Personal Access Tokens → Tokens (Classic)
 
-![Architecture Diagram](https://github.com/Nikhil-Mhatre/azure-qr-code-generator-ci-cd/blob/main/docs/github_token_generation.png)
+![github_token_generation](https://github.com/Nikhil-Mhatre/azure-qr-code-generator-ci-cd/blob/main/docs/github_token_generation.png)
 
 Add it to `.env` using the Terraform variable prefix:
 
@@ -302,18 +302,24 @@ GET /health
 ### Full URL
 
 ```
-GET https://<function-app-name>.azurewebsites.net/api/health
+GET https://qrcode-prod-func.azurewebsites.net/api/health
 ```
 
 ### Expected Response
 
 ```json
 {
-  "status": "ok"
+    "status": "ok",
+    "service": "generate-qr-code",
+    "timestamp": "2026-02-06T19:31:59.759Z"
 }
 ```
 
 ✅ This endpoint is also used by the CI/CD pipeline to validate deployments before slot swapping.
+
+
+![health_endpoint](https://github.com/Nikhil-Mhatre/azure-qr-code-generator-ci-cd/blob/main/docs/health_endpoint.png)
+
 
 ---
 
@@ -324,13 +330,13 @@ This endpoint generates a QR code for a given URL.
 ### Endpoint
 
 ```
-POST /generate-qr-code
+POST /generate-qr
 ```
 
 ### Full URL
 
 ```
-POST https://<function-app-name>.azurewebsites.net/api/generate-qr-code
+POST https://qrcode-prod-func.azurewebsites.net/api/generate-qr
 ```
 
 ---
@@ -348,7 +354,7 @@ Content-Type: application/json
 
 ```json
 {
-  "url": "https://example.com"
+  "url": "https://www.youtube.com"
 }
 ```
 
@@ -362,7 +368,8 @@ Example:
 
 ```json
 {
-  "qrCode": "<base64-encoded-qr-code>"
+    "qrCodeUrl": "<Generate_blob_url>",
+    "expiry": "2026-02-06T20:34:53.984Z"
 }
 ```
 
@@ -372,9 +379,74 @@ You can:
 * Decode the Base64 string into an image
 * Save it locally for further use
 
+
+![generate_qr_endpoint](https://github.com/Nikhil-Mhatre/azure-qr-code-generator-ci-cd/blob/main/docs/generate_qr_endpoint.png)
+
 ---
 
+Here’s a **short, clear, and production-aware “Precautions” section** you can add to your README. It explains *why* this is needed and *exactly* what to do — without being scary or verbose.
 
+---
+
+## ⚠️ Precautions When Destroying Terraform Infrastructure
+
+When destroying the infrastructure using Terraform, **special care is required for Azure Key Vault** due to Azure’s soft-delete and purge protection behavior.
+
+---
+
+### 🔐 Azure Key Vault Deletion Behavior
+
+* Azure Key Vault uses **soft delete** by default
+* When Terraform destroys the Key Vault:
+
+  * The vault is **soft-deleted**, not immediately removed
+  * The name remains reserved and cannot be reused
+* Terraform **cannot automatically purge** the Key Vault
+
+---
+
+### 🧹 Required Manual Cleanup (Important)
+
+After running:
+
+```bash
+terraform destroy
+```
+
+You **must manually purge** the Key Vault.
+
+#### Step 1️⃣ Purge the Key Vault
+
+Using Azure CLI:
+
+```bash
+az keyvault purge \
+  --name <KEY_VAULT_NAME> \
+  --location <LOCATION>
+```
+
+Or via **Azure Portal**:
+
+* Go to **Key Vaults → Deleted vaults**
+* Select the deleted vault
+* Click **Purge**
+
+---
+
+#### Step 2️⃣ Wait Before Recreating
+
+⏳ After purging, **wait at least 10 minutes** before re-running Terraform.
+
+Why this is required:
+
+* Azure needs time to fully propagate the deletion
+* Immediate recreation may fail with:
+
+  * `KeyVaultAlreadyExists`
+  * `Vault name is in use`
+
+
+---
 
 # 🤝 Contributing
 
