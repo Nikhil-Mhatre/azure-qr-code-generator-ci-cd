@@ -97,6 +97,10 @@ resource "azurerm_key_vault_secret" "qr_sas_expiry_hours" {
   name         = "qr-sas-expiry-hours"
   value        = 1
   key_vault_id = azurerm_key_vault.kv.id
+
+  depends_on = [
+    azurerm_role_assignment.tf_kv_admin
+  ]
 }
 
 
