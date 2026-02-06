@@ -120,49 +120,63 @@ cd azure-qr-code-generator-ci-cd
 
 ---
 
-# 🔐 Azure Authentication for Terraform
+# 🔐 Creating a Terraform Service Principal (Azure Portal)
 
 Terraform uses an **Azure Service Principal** to authenticate and manage Azure resources securely.
 
-### 1️⃣ Login to Azure
+## 1️⃣ Create an App Registration
 
-```bash
-az login
+1. Go to **Azure Portal**
+2. Navigate to
+   **Azure Entra ID → App registrations**
+3. Click **New registration**
+4. Fill in:
 
-```
+   * **Name:** `terraform-sp`
+   * **Supported account types:** Single tenant
+5. Click **Register**
 
-If you have multiple subscriptions:
+After creation, note down:
 
-```bash
-az account set --subscription "<SUBSCRIPTION_ID>"
-
-```
+* **Application (client) ID**
+* **Directory (tenant) ID**
 
 ---
 
-### 2️⃣ Create a Service Principal
+## 2️⃣ Create a Client Secret
 
-Run the following command and **store the output securely**:
+1. Inside the App Registration, go to
+   **Certificates & secrets**
+2. Under **Client secrets**, click **New client secret**
+3. Provide:
 
-```bash
-az ad sp create-for-rbac \
-  --name "terraform-sp" \
-  --role="Contributor" \
-  --scopes="/subscriptions/<SUBSCRIPTION_ID>"
+   * **Description:** `terraform-secret`
+   * **Expiry:** 6 or 12 months (recommended)
+4. Click **Add**
+5. **Copy the secret value immediately** (it will not be shown again)
 
-```
+---
 
-Example output:
+## 3️⃣ Assign Role at Subscription Level
 
-```json
-{
-  "appId": "00000000-0000-0000-0000-000000000000",
-  "displayName": "terraform-sp",
-  "password": "xxxxxxxxxxxxxxxx",
-  "tenant": "11111111-1111-1111-1111-111111111111"
-}
+1. Go to **Subscriptions**
+2. Select your target subscription
+3. Navigate to
+   **Access control (IAM)**
+4. Click **Add → Add role assignment**
+5. Choose:
 
-```
+   * **Role:** `Contributor`
+6. Click **Next**
+7. Under **Members**, select:
+
+   * **Assign access to:** User, group, or service principal
+   * **Select members:** `terraform-sp`
+8. Click **Review + assign**
+
+## Note: Create same steps for creating "User Access Administrator" role
+✅ The Service Principal now has permission to manage Azure resources.
+
 
 ---
 
