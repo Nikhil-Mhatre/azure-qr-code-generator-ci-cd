@@ -382,9 +382,6 @@ You can:
 
 ![generate_qr_endpoint](https://github.com/Nikhil-Mhatre/azure-qr-code-generator-ci-cd/blob/main/docs/generate_qr_endpoint.png)
 
----
-
-Here’s a **short, clear, and production-aware “Precautions” section** you can add to your README. It explains *why* this is needed and *exactly* what to do — without being scary or verbose.
 
 ---
 
@@ -431,6 +428,8 @@ Or via **Azure Portal**:
 * Select the deleted vault
 * Click **Purge**
 
+![key_vault_purging_portal](https://github.com/Nikhil-Mhatre/azure-qr-code-generator-ci-cd/blob/main/docs/key_vault_purging_portal.png)
+
 ---
 
 #### Step 2️⃣ Wait Before Recreating
@@ -445,6 +444,7 @@ Why this is required:
   * `KeyVaultAlreadyExists`
   * `Vault name is in use`
 
+![waiting_after_purging](https://github.com/Nikhil-Mhatre/azure-qr-code-generator-ci-cd/blob/main/docs/waiting_after_purging.png)
 
 ---
 
