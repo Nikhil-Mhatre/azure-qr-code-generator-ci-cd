@@ -87,7 +87,7 @@ This repository is ideal as a **real-world baseline** for building secure, scala
 This project uses a secure, production-grade architecture for deploying
 Node.js TypeScript Azure Functions with automated CI/CD.
 
-![Architecture Diagram](https://www.notion.sodocs/architecture-diagram.png)
+![Architecture Diagram](https://github.com/Nikhil-Mhatre/azure-qr-code-generator-ci-cd/blob/main/docs/architecture_diagram.png)
 
 ### High-level design
 
@@ -97,8 +97,6 @@ Node.js TypeScript Azure Functions with automated CI/CD.
 - Deployments use staging slots for zero downtime
 
 📘 **Detailed architecture documentation:**
-
-➡️ [docs/architecture.md](https://www.notion.so/docs/architecture.md)
 
 # 📦 Prerequisites
 
@@ -196,7 +194,8 @@ ARM_SUBSCRIPTION_ID="<subscription_id>"
 Generate a **Classic Personal Access Token**:
 
 > GitHub → Settings → Developer Settings → Personal Access Tokens → Tokens (Classic)
-> 
+
+![Architecture Diagram](https://github.com/Nikhil-Mhatre/azure-qr-code-generator-ci-cd/blob/main/docs/github_token_generation.png)
 
 Add it to `.env` using the Terraform variable prefix:
 
@@ -278,6 +277,98 @@ cd ../.backend
 This will automatically trigger the **GitHub Actions workflow** and deploy the backend to **Azure Functions**.
 
 ---
+
+
+## 🧪 Testing the Azure Function with Postman
+
+This Azure Function exposes two HTTP endpoints that can be tested using **Postman** or any HTTP client.
+
+## ❤️ Health Check Endpoint
+
+Use this endpoint to verify that the Function App is running correctly.
+
+### Endpoint
+
+```
+GET /health
+```
+
+### Full URL
+
+```
+GET https://<function-app-name>.azurewebsites.net/api/health
+```
+
+### Expected Response
+
+```json
+{
+  "status": "ok"
+}
+```
+
+✅ This endpoint is also used by the CI/CD pipeline to validate deployments before slot swapping.
+
+---
+
+## 🔳 Generate QR Code Endpoint
+
+This endpoint generates a QR code for a given URL.
+
+### Endpoint
+
+```
+POST /generate-qr-code
+```
+
+### Full URL
+
+```
+POST https://<function-app-name>.azurewebsites.net/api/generate-qr-code
+```
+
+---
+
+### 📤 Request (Postman Setup)
+
+**Method:** `POST`
+**Headers:**
+
+```
+Content-Type: application/json
+```
+
+**Body (raw → JSON):**
+
+```json
+{
+  "url": "https://example.com"
+}
+```
+
+---
+
+### 📥 Response
+
+On success, the API returns a QR code (for example, as a base64 string or image URL, depending on implementation).
+
+Example:
+
+```json
+{
+  "qrCode": "<base64-encoded-qr-code>"
+}
+```
+
+You can:
+
+* Render the QR code in a frontend
+* Decode the Base64 string into an image
+* Save it locally for further use
+
+---
+
+
 
 # 🤝 Contributing
 
