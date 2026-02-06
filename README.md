@@ -153,7 +153,9 @@ After creation, note down:
    * **Description:** `terraform-secret`
    * **Expiry:** 6 or 12 months (recommended)
 4. Click **Add**
-5. **Copy the secret value immediately** (it will not be shown again)
+5. **Copy the secret value immediately it will client secret** (it will not be shown again)
+
+![Architecture Diagram](https://github.com/Nikhil-Mhatre/azure-qr-code-generator-ci-cd/blob/main/docs/Terraform_SP_creation.png)
 
 ---
 
@@ -177,17 +179,7 @@ After creation, note down:
 ## Note: Create same steps for creating "User Access Administrator" role
 ✅ The Service Principal now has permission to manage Azure resources.
 
-
----
-
-### 3️⃣ Map Azure Output to Terraform Variables
-
-| Terraform Variable | Azure CLI Output |
-| --- | --- |
-| `client_id` | `appId` |
-| `client_secret` | `password` |
-| `tenant_id` | `tenant` |
-| `subscription_id` | Azure Subscription ID |
+![Architecture Diagram](https://github.com/Nikhil-Mhatre/azure-qr-code-generator-ci-cd/blob/main/docs/contributor_and_user_access_role_assignment.png)
 
 ---
 
@@ -196,8 +188,8 @@ After creation, note down:
 Create a `.env` file (refer to `.env.sample`) and ensure **all Azure secrets are prefixed with `ARM_`**.
 
 ```bash
-ARM_CLIENT_ID="<appId>"
-ARM_CLIENT_SECRET="<password>"
+ARM_CLIENT_ID="<client_id>"
+ARM_CLIENT_SECRET="<client_secret>"
 ARM_TENANT_ID="<tenant>"
 ARM_SUBSCRIPTION_ID="<subscription_id>"
 
